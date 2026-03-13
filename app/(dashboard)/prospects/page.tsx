@@ -1,0 +1,81 @@
+import type { Metadata } from 'next'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
+
+export const metadata: Metadata = { title: '見込み先一覧 | Scout' }
+import ProspectList from '@/components/companies/ProspectList'
+import ProspectFilters from '@/components/companies/ProspectFilters'
+import ProspectCreateButton from '@/components/companies/ProspectCreateButton'
+import type { Company, User, ProspectFilters as PF, ProspectSortKey } from '@/types'
+import { CLOSED_STATUSES } from '@/types'
+
+interface Props {
+  searchParams: Promise<Record<string, string>>
+}
+
+export default async function ProspectsPage({ searchParams }: Props) {
+  const params = await searchParams
+  const supabase = await createClient()
+  const { data: { user: authUser } } = await supabase.auth.getUser()
+  if (!authUser) redirect('/login')
+
+  const [usersResult, currentUserResult] = await Promise.all([
+    supabase.from('users').select('*').order('name'),
+    supabase.from('users').select('*').eq('id', authUser.id).single(),
+  ])
+
+  // クエリ構築
+  let query = supabase.from('companies').select(`
+    *,
+    owner:users!companies_owner_user_id_fkey(id, name, email, role, created_at),
+    members:company_members(user:users(id, name, email, role, created_at))
+  `)
+
+  const showClosed = !!params.closed
+  if (!showClosed) {
+    const closedIn = CLOSED_STATUSES.map((s) => `"${s}"`).join(',')
+    query = query.not('status', 'in', `(${closedIn})`)
+  }
+  // デフォルトは自分の担当のみ。'all' で全員表示
+  const ownerFilter = params.owner === 'all' ? null : (params.owner || authUser.id)
+  if (ownerFilter) query = query.eq('owner_user_id', ownerFilter)
+  if (params.status) query = query.eq('status', params.status)
+  if (params.rank) query = query.eq('expectation_rank', params.rank)
+  if (params.important) query = query.eq('is_important', true)
+  if (params.q) query = query.ilike('company_name', `%${params.q}%`)
+
+  const sortKey = (params.sort as ProspectSortKey) || 'updated_at'
+  // 期待度のみ昇順（A→E）、それ以外は降順（新しい順）
+  const ascending = sortKey === 'expectation_rank'
+  query = query.order(sortKey, { ascending, nullsFirst: false })
+
+  const { data: rawProspects } = await query
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prospects: Company[] = (rawProspects ?? []).map((d: any) => ({
+    ...d,
+    members: (d.members ?? []).map((m: { user: User }) => m.user).filter(Boolean),
+  }))
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">見込み先一覧</h1>
+          <p className="text-sm text-gray-400 mt-0.5">{prospects.length}件</p>
+        </div>
+        <ProspectCreateButton
+          users={usersResult.data as User[]}
+          currentUser={currentUserResult.data as User}
+        />
+      </div>
+
+      <Suspense>
+        <ProspectFilters users={usersResult.data as User[]} currentUserId={authUser.id} />
+      </Suspense>
+
+      <ProspectList prospects={prospects} />
+    </div>
+  )
+}
