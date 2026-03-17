@@ -47,13 +47,13 @@ interface Props {
 function PipelineSummary({ stats }: { stats: PipelineStats }) {
   return (
     <div className="section-card p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-gray-900">マイパイプライン（進行中 A・B案件）</h2>
-        <Link href="/prospects" className="text-xs text-blue-500 hover:underline">
+      <div className="flex items-center justify-between mb-4 gap-2">
+        <h2 className="text-sm font-semibold text-gray-900 leading-snug">マイパイプライン<span className="hidden sm:inline">（期待度A・B、進行中）</span></h2>
+        <Link href="/prospects" className="text-xs text-blue-500 hover:underline shrink-0">
           一覧で確認 →
         </Link>
       </div>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="text-center">
           <p className="text-2xl font-bold text-gray-900 tabular-nums">{stats.count}</p>
           <p className="text-xs text-gray-400 mt-0.5">社</p>
@@ -110,13 +110,13 @@ function TodayMeetingRow({ prospect, today }: { prospect: ProspectItem; today: s
   return (
     <Link
       href={`/prospects/${prospect.id}`}
-      className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-blue-50 transition-colors group"
+      className="flex items-center justify-between gap-2 py-2.5 px-3 rounded-lg hover:bg-blue-50 transition-colors group"
     >
-      <p className="text-sm font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+      <p className="text-sm font-medium text-gray-900 truncate min-w-0 group-hover:text-blue-600 transition-colors">
         {prospect.company_name}
       </p>
-      <div className="flex items-center gap-2 shrink-0 ml-3">
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+      <div className="flex items-center gap-1.5 shrink-0">
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${
           isToday ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'
         }`}>
           {isToday ? '今日' : '明日'}
@@ -138,27 +138,27 @@ function OverdueActionRow({
 }) {
   const days = daysSince(log.next_action_date)
   return (
-    <div className="flex items-start gap-2 py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors group">
-      <Link href={`/prospects/${log.company_id}`} className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
-          {log.company?.company_name ?? '—'}
-        </p>
-        <p className="text-xs text-gray-500 mt-0.5 truncate">{log.next_action}</p>
-      </Link>
-      <div className="shrink-0 flex items-center gap-2">
-        <div className="text-right">
-          <p className="text-xs font-medium text-orange-500 tabular-nums">
-            {days !== null ? `${days}日超過` : '—'}
+    <div className="py-2.5 px-3 rounded-lg hover:bg-orange-50 transition-colors group">
+      <div className="flex items-start gap-2">
+        <Link href={`/prospects/${log.company_id}`} className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+            {log.company?.company_name ?? '—'}
           </p>
-          <p className="text-xs text-gray-400">{formatDate(log.next_action_date)}予定</p>
-        </div>
+          <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{log.next_action}</p>
+        </Link>
         <button
           onClick={() => onDismiss(log.id)}
-          className="w-6 h-6 rounded-full bg-gray-100 hover:bg-green-100 hover:text-green-600 text-gray-400 flex items-center justify-center text-xs transition-colors shrink-0"
+          className="w-6 h-6 rounded-full bg-gray-100 hover:bg-green-100 hover:text-green-600 text-gray-400 flex items-center justify-center text-xs transition-colors shrink-0 mt-0.5"
           title="完了にする"
         >
           ✓
         </button>
+      </div>
+      <div className="mt-1 flex items-center gap-2 text-xs">
+        <span className="font-medium text-orange-500 tabular-nums">
+          {days !== null ? `${days}日超過` : '—'}
+        </span>
+        <span className="text-gray-400">{formatDate(log.next_action_date)}予定</span>
       </div>
     </div>
   )
@@ -171,7 +171,7 @@ function ImportantNeglectedRow({ prospect }: { prospect: ProspectItem }) {
   return (
     <Link
       href={`/prospects/${prospect.id}`}
-      className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-amber-50 transition-colors group"
+      className="flex items-center justify-between gap-2 py-2.5 px-3 rounded-lg hover:bg-amber-50 transition-colors group"
     >
       <div className="min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate group-hover:text-amber-700 transition-colors">
@@ -216,7 +216,7 @@ export default function HomeWidgets({
     <div className="space-y-5">
 
       {/* ヘッダー */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">ホーム</h1>
           <p className="text-sm text-gray-400 mt-0.5">{currentUser.name} さん、お疲れ様です</p>
@@ -280,7 +280,7 @@ export default function HomeWidgets({
         <div className="section-card p-4">
           <WidgetHeader
             icon="★"
-            title="重要案件で長期間未接触（30日以上）"
+            title="重要な見込み先 × 長期未接触（30日以上）"
             count={importantNeglected.length}
             href="/prospects/important-neglected"
           />

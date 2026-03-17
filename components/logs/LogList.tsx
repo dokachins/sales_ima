@@ -59,7 +59,12 @@ export default function LogList({
       </div>
 
       {logs.length === 0 ? (
-        <p className="text-sm text-gray-400 py-4">折衝履歴はまだありません</p>
+        <div className="py-6 text-center">
+          <p className="text-sm text-gray-400 mb-3">折衝履歴はまだありません</p>
+          <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
+            最初の記録を追加する
+          </Button>
+        </div>
       ) : (
         <div className="space-y-0">
           {logs.map((log, i) => (

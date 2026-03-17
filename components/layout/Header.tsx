@@ -64,6 +64,24 @@ export default function Header({ user: initialUser }: HeaderProps) {
 
   return (
     <>
+      {/* モバイル用ボトムナビ */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex">
+        <Link
+          href="/"
+          className="flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-gray-500 hover:text-gray-900 transition-colors"
+        >
+          <span className="text-lg leading-none">🏠</span>
+          <span className="text-xs">ホーム</span>
+        </Link>
+        <Link
+          href="/prospects"
+          className="flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-gray-500 hover:text-gray-900 transition-colors"
+        >
+          <span className="text-lg leading-none">📋</span>
+          <span className="text-xs">見込み先</span>
+        </Link>
+      </nav>
+
       <header className="border-b bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link

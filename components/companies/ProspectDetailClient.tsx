@@ -89,7 +89,7 @@ export default function ProspectDetailClient({ prospect: init, logs: initLogs, u
       </div>
 
       {/* ヘッダー */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="space-y-1.5 min-w-0">
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${PROSPECT_STATUS_STYLES[prospect.status] ?? ''}`}>
@@ -102,20 +102,18 @@ export default function ProspectDetailClient({ prospect: init, logs: initLogs, u
             )}
           </div>
           <h1 className="text-2xl font-semibold text-gray-900">{prospect.company_name}</h1>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-500">
             <span>主担当: <span className="text-gray-800 font-medium">{prospect.owner?.name ?? '未設定'}</span></span>
             {prospect.expectation_rank && (
-              <>
+              <span className="flex items-center gap-1">
                 <span className="text-gray-300">·</span>
-                <span className="flex items-center gap-1">
-                  期待度 <ExpectationBadge rank={prospect.expectation_rank} size="sm" />
-                </span>
-              </>
+                期待度 <ExpectationBadge rank={prospect.expectation_rank} size="sm" />
+              </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2">
           <button
             onClick={toggleImportant}
             className={`text-xl leading-none transition-colors ${prospect.is_important ? 'text-amber-400' : 'text-gray-300 hover:text-amber-300'}`}
@@ -136,14 +134,32 @@ export default function ProspectDetailClient({ prospect: init, logs: initLogs, u
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      {/* スマホ用: 粗利・棟数を最上部に表示 */}
+      {(prospect.expected_gross_profit != null || prospect.building_count != null) && (
+        <div className="md:hidden section-card p-4 flex items-center gap-6">
+          {prospect.expected_gross_profit != null && (
+            <div>
+              <p className="text-xs text-gray-400">見込粗利</p>
+              <p className="text-lg font-bold text-gray-900">{formatYen(prospect.expected_gross_profit)}</p>
+            </div>
+          )}
+          {prospect.building_count != null && (
+            <div>
+              <p className="text-xs text-gray-400">棟数</p>
+              <p className="text-lg font-bold text-gray-900">{prospect.building_count}棟</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* メインコンテンツ */}
-        <div className="col-span-2 space-y-3">
+        <div className="col-span-1 md:col-span-2 space-y-3">
 
           {/* 基本情報 */}
           <section className="section-card p-5 space-y-4">
             <h2 className="text-sm font-semibold text-gray-900">基本情報</h2>
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
               <div>
                 <dt className="text-xs text-gray-400 mb-0.5">次回打ち合わせ日</dt>
                 <dd className="font-medium text-gray-900">
@@ -157,18 +173,11 @@ export default function ProspectDetailClient({ prospect: init, logs: initLogs, u
                 <dt className="text-xs text-gray-400 mb-0.5">最終接触日</dt>
                 <dd className="font-medium text-gray-900">{formatDate(prospect.last_contact_date)}</dd>
               </div>
-              <div>
-                <dt className="text-xs text-gray-400 mb-0.5">作成日</dt>
-                <dd className="text-gray-600">{formatDate(prospect.created_at)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-gray-400 mb-0.5">最終更新</dt>
-                <dd className="text-gray-600 text-xs">
-                  {formatDateTime(prospect.updated_at)}
-                  {prospect.updater && <span className="text-gray-400"> ({prospect.updater.name})</span>}
-                </dd>
-              </div>
             </dl>
+            <p className="text-xs text-gray-300">
+              登録 {formatDate(prospect.created_at)}
+              {prospect.updater && <> · 更新 {formatDateTime(prospect.updated_at)}（{prospect.updater.name}）</>}
+            </p>
 
             {(prospect.members?.length ?? 0) > 0 || canEdit ? (
               <>
@@ -190,18 +199,28 @@ export default function ProspectDetailClient({ prospect: init, logs: initLogs, u
           </section>
 
           {/* 数字情報 */}
-          {(prospect.target_sales != null || prospect.expected_gross_profit != null) && (
+          {(prospect.target_sales != null || prospect.expected_gross_profit != null || prospect.building_count != null) && (
             <section className="section-card p-5 space-y-3">
               <h2 className="text-sm font-semibold text-gray-900">数字情報</h2>
-              <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                <div>
-                  <dt className="text-xs text-gray-400 mb-0.5">目標売上</dt>
-                  <dd className="font-medium text-gray-900">{formatYen(prospect.target_sales)}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-gray-400 mb-0.5">見込粗利</dt>
-                  <dd className="font-medium text-gray-900">{formatYen(prospect.expected_gross_profit)}</dd>
-                </div>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                {prospect.expected_gross_profit != null && (
+                  <div>
+                    <dt className="text-xs text-gray-400 mb-0.5">見込粗利</dt>
+                    <dd className="font-medium text-gray-900">{formatYen(prospect.expected_gross_profit)}</dd>
+                  </div>
+                )}
+                {prospect.building_count != null && (
+                  <div>
+                    <dt className="text-xs text-gray-400 mb-0.5">棟数</dt>
+                    <dd className="font-medium text-gray-900">{prospect.building_count}棟</dd>
+                  </div>
+                )}
+                {prospect.target_sales != null && (
+                  <div>
+                    <dt className="text-xs text-gray-400 mb-0.5">目標売上</dt>
+                    <dd className="font-medium text-gray-900">{formatYen(prospect.target_sales)}</dd>
+                  </div>
+                )}
               </dl>
             </section>
           )}
@@ -248,8 +267,8 @@ export default function ProspectDetailClient({ prospect: init, logs: initLogs, u
           </section>
         </div>
 
-        {/* サイドバー */}
-        <div className="space-y-3">
+        {/* サイドバー（PCのみ） */}
+        <div className="hidden md:block space-y-3">
           <div className="section-card p-4 space-y-3">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">サマリー</h3>
             <div className="space-y-2.5 text-sm">

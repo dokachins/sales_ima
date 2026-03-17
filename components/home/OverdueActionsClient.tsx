@@ -56,34 +56,37 @@ export default function OverdueActionsClient({ logs: initial, currentUser: _curr
       {logs.map((log) => {
         const days = daysSince(log.next_action_date)
         return (
-          <div key={log.id} className="flex items-start gap-3 p-4 hover:bg-orange-50/50 transition-colors group">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <Link
-                  href={`/prospects/${log.company_id}`}
-                  className="text-sm font-semibold text-gray-900 hover:text-orange-600 hover:underline transition-colors"
-                >
-                  {log.company?.company_name ?? '—'}
-                </Link>
-                <ExpectationBadge rank={log.company?.expectation_rank as Parameters<typeof ExpectationBadge>[0]['rank']} size="sm" />
-                <span className="text-xs text-gray-400">{log.company?.status}</span>
+          <div key={log.id} className="p-4 hover:bg-orange-50/50 transition-colors group">
+            <div className="flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <Link
+                    href={`/prospects/${log.company_id}`}
+                    className="text-sm font-semibold text-gray-900 hover:text-orange-600 hover:underline transition-colors"
+                  >
+                    {log.company?.company_name ?? '—'}
+                  </Link>
+                  <ExpectationBadge rank={log.company?.expectation_rank as Parameters<typeof ExpectationBadge>[0]['rank']} size="sm" />
+                  <span className="text-xs text-gray-400">{log.company?.status}</span>
+                </div>
+                <p className="text-sm text-gray-700">{log.next_action}</p>
               </div>
-              <p className="text-sm text-gray-700">{log.next_action}</p>
-              <p className="text-xs text-gray-400 mt-1">
-                {formatDate(log.next_action_date)} 予定 ·
-                折衝日 {formatDate(log.action_date)} ({log.action_type})
-              </p>
-            </div>
-            <div className="shrink-0 flex items-center gap-3">
-              <span className="text-sm font-semibold text-orange-500 tabular-nums">
-                {days !== null ? `${days}日超過` : '—'}
-              </span>
               <button
                 onClick={() => dismiss(log.id)}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 hover:bg-green-100 hover:text-green-700 text-gray-500 transition-colors"
+                className="shrink-0 w-7 h-7 rounded-full bg-gray-100 hover:bg-green-100 hover:text-green-700 text-gray-400 flex items-center justify-center text-xs transition-colors"
+                title="完了にする"
               >
-                ✓ 完了
+                ✓
               </button>
+            </div>
+            <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-400">
+              <span className="font-medium text-orange-500 tabular-nums">
+                {days !== null ? `${days}日超過` : '—'}
+              </span>
+              <span>·</span>
+              <span>{formatDate(log.next_action_date)} 予定</span>
+              <span>·</span>
+              <span>{log.action_type} {formatDate(log.action_date)}</span>
             </div>
           </div>
         )

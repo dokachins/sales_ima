@@ -38,14 +38,14 @@ export default async function ImportantNeglectedPage() {
       <div className="flex items-center gap-1.5 text-sm text-gray-400">
         <Link href="/" className="hover:text-gray-600 transition-colors">ホーム</Link>
         <span>/</span>
-        <span className="text-gray-700">重要案件 × 長期未接触</span>
+        <span className="text-gray-700">重要な見込み先 × 長期未接触</span>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">重要案件 × 長期未接触</h1>
+          <h1 className="text-xl font-semibold text-gray-900">重要な見込み先 × 長期未接触</h1>
           <p className="text-sm text-gray-400 mt-0.5">
-            重要フラグあり・30日以上未接触の進行中案件 — {prospects.length}件
+            重要フラグあり・30日以上未接触の進行中見込み先 — {prospects.length}件
           </p>
         </div>
         <Link href="/prospects" className="text-xs text-blue-500 hover:underline">

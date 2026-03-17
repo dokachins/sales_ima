@@ -41,7 +41,7 @@ export default async function TodayMeetingsPage() {
         <span className="text-gray-700">今日・明日の打ち合わせ</span>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">今日・明日の打ち合わせ</h1>
           <p className="text-sm text-gray-400 mt-0.5">

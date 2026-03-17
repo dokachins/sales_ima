@@ -60,15 +60,17 @@ export default async function ProspectsPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">見込み先一覧</h1>
           <p className="text-sm text-gray-400 mt-0.5">{prospects.length}件</p>
         </div>
-        <ProspectCreateButton
-          users={usersResult.data as User[]}
-          currentUser={currentUserResult.data as User}
-        />
+        <div className="shrink-0">
+          <ProspectCreateButton
+            users={usersResult.data as User[]}
+            currentUser={currentUserResult.data as User}
+          />
+        </div>
       </div>
 
       <Suspense>

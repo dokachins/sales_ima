@@ -198,7 +198,7 @@ export default function ProspectForm({ prospect, users, currentUser, onSuccess }
       {/* 数字情報 */}
       <div className="space-y-3">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">数字情報（任意）</p>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="target_sales" className="text-xs font-medium text-gray-500">目標売上</Label>
             <NumberInput

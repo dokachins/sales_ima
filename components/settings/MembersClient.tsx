@@ -48,16 +48,16 @@ export default function MembersClient({ users, currentUser }: Props) {
       {isAdmin && (
         <section className="section-card p-5">
           <h2 className="text-sm font-semibold text-gray-900 mb-3">メンバーを招待</h2>
-          <form onSubmit={handleInvite} className="flex gap-2">
+          <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-2">
             <Input
               type="email"
               placeholder="メールアドレスを入力"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="max-w-xs h-9 text-sm"
+              className="w-full sm:max-w-xs h-9 text-sm"
               required
             />
-            <Button type="submit" size="sm" disabled={isPending}>
+            <Button type="submit" size="sm" disabled={isPending} className="shrink-0">
               {isPending ? '送信中...' : '招待メールを送る'}
             </Button>
           </form>
@@ -67,8 +67,8 @@ export default function MembersClient({ users, currentUser }: Props) {
         </section>
       )}
 
-      {/* メンバー一覧 */}
-      <section className="section-card overflow-hidden">
+      {/* メンバー一覧: PC テーブル */}
+      <section className="hidden md:block section-card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50/60">
@@ -90,9 +90,7 @@ export default function MembersClient({ users, currentUser }: Props) {
                 <td className="px-4 py-3 text-gray-500">{u.email}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${
-                    u.role === 'admin'
-                      ? 'bg-indigo-50 text-indigo-700'
-                      : 'bg-gray-100 text-gray-500'
+                    u.role === 'admin' ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-500'
                   }`}>
                     {u.role === 'admin' ? '管理者' : 'メンバー'}
                   </span>
@@ -117,6 +115,43 @@ export default function MembersClient({ users, currentUser }: Props) {
           </tbody>
         </table>
       </section>
+
+      {/* メンバー一覧: スマホ カード */}
+      <div className="md:hidden space-y-2">
+        {users.map((u) => (
+          <div key={u.id} className="section-card p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-medium text-gray-900 text-sm">
+                  {u.name}
+                  {u.id === currentUser.id && (
+                    <span className="ml-1.5 text-xs text-gray-400 font-normal">（自分）</span>
+                  )}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5 truncate">{u.email}</p>
+              </div>
+              <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
+                u.role === 'admin' ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-500'
+              }`}>
+                {u.role === 'admin' ? '管理者' : 'メンバー'}
+              </span>
+            </div>
+            {isAdmin && u.id !== currentUser.id && (
+              <div className="mt-3 flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-7"
+                  disabled={isPending}
+                  onClick={() => handleRoleChange(u.id, u.role === 'admin' ? 'member' : 'admin')}
+                >
+                  {u.role === 'admin' ? 'メンバーに変更' : '管理者に変更'}
+                </Button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
