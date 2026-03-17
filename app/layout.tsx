@@ -1,17 +1,18 @@
 import type { Metadata } from 'next'
-import { Geist, Space_Grotesk } from 'next/font/google'
+import { Inter, Noto_Sans_JP } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 
-const geist = Geist({
-  variable: '--font-geist-sans',
+const inter = Inter({
+  variable: '--font-inter',
   subsets: ['latin'],
+  display: 'swap',
 })
 
-const spaceGrotesk = Space_Grotesk({
-  weight: '700',
-  variable: '--font-space-grotesk',
+const notoSansJP = Noto_Sans_JP({
+  variable: '--font-noto-sans-jp',
   subsets: ['latin'],
+  weight: ['400', '500', '700'],
   display: 'swap',
 })
 
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
-      <body className={`${geist.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${notoSansJP.variable} font-sans antialiased`}>
         {children}
         <Toaster richColors />
       </body>
