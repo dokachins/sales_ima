@@ -20,6 +20,7 @@ interface Props {
 export default function ProspectList({ prospects, onUpdate }: Props) {
   const router = useRouter()
   const supabase = createClient()
+  const [items, setItems] = useState(prospects)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -41,12 +42,13 @@ export default function ProspectList({ prospects, onUpdate }: Props) {
     const { error } = await supabase.from('companies').delete().eq('id', deleteTarget.id)
     setDeleting(false)
     if (error) { toast.error('削除に失敗しました'); return }
+    setItems((prev) => prev.filter((p) => p.id !== deleteTarget.id))
     toast.success('削除しました')
     setDeleteTarget(null)
     router.refresh()
   }
 
-  if (prospects.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="section-card py-16 text-center">
         <p className="text-sm text-gray-400">該当する見込み先がありません</p>
@@ -79,7 +81,7 @@ export default function ProspectList({ prospects, onUpdate }: Props) {
 
       {/* モバイル: カード表示 */}
       <div className="md:hidden space-y-2">
-        {prospects.map((p) => (
+        {items.map((p) => (
           <div
             key={p.id}
             className="section-card p-4 cursor-pointer active:bg-gray-50"
@@ -149,7 +151,7 @@ export default function ProspectList({ prospects, onUpdate }: Props) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {prospects.map((p) => (
+            {items.map((p) => (
               <tr
                 key={p.id}
                 className="hover:bg-blue-50/30 transition-colors group cursor-pointer"
