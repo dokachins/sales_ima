@@ -1,14 +1,15 @@
 import type { Metadata } from 'next'
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
-
-export const metadata: Metadata = { title: '見込み先一覧 | Scout' }
+import { createClient } from '@/lib/supabase/server'
+import { getAuthUser, getCurrentProfile } from '@/lib/supabase/cached'
 import ProspectList from '@/components/companies/ProspectList'
 import ProspectFilters from '@/components/companies/ProspectFilters'
 import ProspectCreateButton from '@/components/companies/ProspectCreateButton'
-import type { Company, User, ProspectFilters as PF, ProspectSortKey } from '@/types'
+import type { Company, User, ProspectSortKey } from '@/types'
 import { CLOSED_STATUSES } from '@/types'
+
+export const metadata: Metadata = { title: '見込み先一覧 | Scout' }
 
 interface Props {
   searchParams: Promise<Record<string, string>>
@@ -16,14 +17,19 @@ interface Props {
 
 export default async function ProspectsPage({ searchParams }: Props) {
   const params = await searchParams
-  const supabase = await createClient()
-  const { data: { user: authUser } } = await supabase.auth.getUser()
+
+  const authUser = await getAuthUser()
   if (!authUser) redirect('/login')
 
-  const [usersResult, currentUserResult] = await Promise.all([
-    supabase.from('users').select('*').order('name'),
-    supabase.from('users').select('*').eq('id', authUser.id).single(),
+  const supabase = await createClient()
+
+  // ユーザー一覧・フィルター対象クエリを並列取得（currentUser は layout でキャッシュ済み）
+  const [usersResult, currentUser] = await Promise.all([
+    supabase.from('users').select('id, name, email, role, created_at').order('name'),
+    getCurrentProfile(authUser.id),
   ])
+
+  if (!currentUser) redirect('/login')
 
   // クエリ構築
   let query = supabase.from('companies').select(`
@@ -37,7 +43,6 @@ export default async function ProspectsPage({ searchParams }: Props) {
     const closedIn = CLOSED_STATUSES.map((s) => `"${s}"`).join(',')
     query = query.not('status', 'in', `(${closedIn})`)
   }
-  // デフォルトは自分の担当のみ。'all' で全員表示
   const ownerFilter = params.owner === 'all' ? null : (params.owner || authUser.id)
   if (ownerFilter) query = query.eq('owner_user_id', ownerFilter)
   if (params.status) query = query.eq('status', params.status)
@@ -46,7 +51,6 @@ export default async function ProspectsPage({ searchParams }: Props) {
   if (params.q) query = query.ilike('company_name', `%${params.q}%`)
 
   const sortKey = (params.sort as ProspectSortKey) || 'updated_at'
-  // 期待度のみ昇順（A→E）、それ以外は降順（新しい順）
   const ascending = sortKey === 'expectation_rank'
   query = query.order(sortKey, { ascending, nullsFirst: false })
 
@@ -67,14 +71,14 @@ export default async function ProspectsPage({ searchParams }: Props) {
         </div>
         <div className="shrink-0">
           <ProspectCreateButton
-            users={usersResult.data as User[]}
-            currentUser={currentUserResult.data as User}
+            users={(usersResult.data ?? []) as User[]}
+            currentUser={currentUser as User}
           />
         </div>
       </div>
 
       <Suspense>
-        <ProspectFilters users={usersResult.data as User[]} currentUserId={authUser.id} />
+        <ProspectFilters users={(usersResult.data ?? []) as User[]} currentUserId={authUser.id} />
       </Suspense>
 
       <ProspectList prospects={prospects} />
