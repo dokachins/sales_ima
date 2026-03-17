@@ -18,9 +18,12 @@ export function formatManYen(value: number | null | undefined): string {
   return `${man.toFixed(1)}万円`
 }
 
-/** フォーム用: カンマ区切り文字列 → 数値 */
+/** フォーム用: カンマ区切り文字列 → 数値（全角数字も自動変換） */
 export function parseFormattedNumber(str: string): number | null {
-  const cleaned = str.replace(/,/g, '').trim()
+  const cleaned = str
+    .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
+    .replace(/[,，]/g, '')
+    .trim()
   if (cleaned === '') return null
   const n = Number(cleaned)
   return isNaN(n) ? null : n

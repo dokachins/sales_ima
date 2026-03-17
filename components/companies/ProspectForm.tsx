@@ -45,6 +45,21 @@ export default function ProspectForm({ prospect, users, currentUser, onSuccess }
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLFormElement>) {
+    if (e.key !== 'Enter') return
+    const target = e.target as HTMLElement
+    if (target.tagName === 'TEXTAREA') return
+    if ((target as HTMLButtonElement).type === 'submit') return
+    e.preventDefault()
+    const focusables = Array.from(
+      e.currentTarget.querySelectorAll<HTMLElement>(
+        'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])'
+      )
+    )
+    const idx = focusables.indexOf(target)
+    if (idx >= 0 && idx < focusables.length - 1) focusables[idx + 1].focus()
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.company_name.trim()) {
@@ -108,7 +123,7 @@ export default function ProspectForm({ prospect, users, currentUser, onSuccess }
   const allStatuses = PROSPECT_STATUSES
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
 
       {/* 会社名 */}
       <div className="space-y-1.5">
