@@ -1,7 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import ExpectationBadge from '@/components/deals/ExpectationBadge'
 import { formatDate } from '@/lib/utils/date'
 import { formatManYen } from '@/lib/utils/number'
@@ -17,11 +20,29 @@ interface Props {
 export default function ProspectList({ prospects, onUpdate }: Props) {
   const router = useRouter()
   const supabase = createClient()
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   async function toggleImportant(e: React.MouseEvent, id: string, current: boolean) {
     e.stopPropagation()
     const { error } = await supabase.from('companies').update({ is_important: !current }).eq('id', id)
     if (error) { toast.error('更新に失敗しました'); return }
+    router.refresh()
+  }
+
+  function openDelete(e: React.MouseEvent, id: string, name: string) {
+    e.stopPropagation()
+    setDeleteTarget({ id, name })
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    const { error } = await supabase.from('companies').delete().eq('id', deleteTarget.id)
+    setDeleting(false)
+    if (error) { toast.error('削除に失敗しました'); return }
+    toast.success('削除しました')
+    setDeleteTarget(null)
     router.refresh()
   }
 
@@ -35,6 +56,27 @@ export default function ProspectList({ prospects, onUpdate }: Props) {
 
   return (
     <>
+      {/* 削除確認ダイアログ */}
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>本当に削除しますか？</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600 mt-1">
+            「{deleteTarget?.name}」を削除します。<br />
+            <span className="text-gray-400">関連する折衝履歴もすべて削除されます。</span>
+          </p>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              キャンセル
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? '削除中...' : '削除する'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* モバイル: カード表示 */}
       <div className="md:hidden space-y-2">
         {prospects.map((p) => (
@@ -55,6 +97,13 @@ export default function ProspectList({ prospects, onUpdate }: Props) {
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <ExpectationBadge rank={p.expectation_rank} size="sm" />
+                <button
+                  onClick={(e) => openDelete(e, p.id, p.company_name)}
+                  className="text-gray-300 hover:text-red-400 transition-colors px-1"
+                  title="削除"
+                >
+                  🗑
+                </button>
                 <span className="text-gray-300 text-xs">›</span>
               </div>
             </div>
@@ -96,6 +145,7 @@ export default function ProspectList({ prospects, onUpdate }: Props) {
               <th className="text-right px-3 py-3 font-medium text-gray-400 text-xs tracking-wide w-20">棟数</th>
               <th className="text-right px-3 py-3 font-medium text-gray-400 text-xs tracking-wide w-28">見込粗利</th>
               <th className="text-left px-3 py-3 font-medium text-gray-400 text-xs tracking-wide w-24">更新日</th>
+              <th className="w-10" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -157,6 +207,15 @@ export default function ProspectList({ prospects, onUpdate }: Props) {
                 </td>
                 <td className="px-3 py-3 text-gray-400 text-xs">
                   {formatDate(p.updated_at)}
+                </td>
+                <td className="px-2 py-3 text-center">
+                  <button
+                    onClick={(e) => openDelete(e, p.id, p.company_name)}
+                    className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all text-sm"
+                    title="削除"
+                  >
+                    🗑
+                  </button>
                 </td>
               </tr>
             ))}
