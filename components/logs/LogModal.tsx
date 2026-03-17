@@ -76,7 +76,7 @@ export default function LogModal({
         toast.success('折衝履歴を追加しました')
       }
 
-      onOpenChange(false)
+      handleOpenChange(false)
       onSuccess()
     } catch {
       toast.error('保存に失敗しました')

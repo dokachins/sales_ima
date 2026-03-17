@@ -26,6 +26,7 @@ export default function ProspectCreateButton({ users, currentUser }: Props) {
             <DialogTitle>見込み先を登録</DialogTitle>
           </DialogHeader>
           <ProspectForm
+            key={String(open)}
             users={users}
             currentUser={currentUser}
             onSuccess={() => setOpen(false)}
